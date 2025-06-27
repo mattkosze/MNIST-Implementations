@@ -30,3 +30,28 @@ class Softmax:
         nProb = unProb / np.sum(unProb, axis=1, keepdims=True)
 
         self.output = nProb
+
+
+class CategoricalCrossEntropyLoss:
+    # The forward method because we don't need to override any initializations
+    def forward(self, yPred, yTrue):
+        # Number of samples in the batch
+        samples = len(yPred)
+        # Clip our data from both ends to prevent division by 0
+        yPred = np.clip(yPred, 1e-7, 1 - 1e-7)
+
+        # Probabilities for one-hot encoded target values
+        confidences = np.sum(yPred * yTrue, axis=1)
+        # Losses
+        negLogLikelihood = -np.log(confidences)
+
+        return negLogLikelihood
+
+    # A calculate method
+    def calculate(self, output, y):
+        # Calculate the loss
+        sampleLoss = self.forward(output, y)
+        # Calculate the mean loss
+        dataLoss = np.mean(sampleLoss)
+
+        return dataLoss
