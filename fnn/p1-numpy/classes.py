@@ -70,6 +70,13 @@ class CategoricalCrossEntropyLoss:
 
         return negLogLikelihood
 
+    # Our backward pass method; we assume all labels are one-hot
+    def backward(self, dValues, yTrue):
+        # Figure out the amount of samples
+        sampleLen = len(dValues)
+        # Calculate our gradient and normalize it
+        self.dinputs = (-yTrue / dValues) / sampleLen
+
     # A calculate method
     def calculate(self, output, y):
         # Calculate the loss
