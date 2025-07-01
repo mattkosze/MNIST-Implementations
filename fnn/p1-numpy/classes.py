@@ -13,11 +13,20 @@ class DenseLayer:
         # Calculate outputs using the method previously discussed
         self.outputs = np.dot(inputs, self.weights) + self.biases
 
+
 class ReLU:
     # Our forward method; no overriding init method needed
     def forward(self, inputs):
         # Using the np.max() method to carry out our comparisons
         self.output = np.maximum(0, inputs)
+
+    # The backward method which calculate the partial derivatives
+    def backward(self, dvalues):
+        # Let's copy the dvalues so we can modify them directly
+        self.dinputs = dvalues.copy()
+
+        # Give a zero gradient where values were negative - therefore not fulfilling the (x>0)
+        self.dinputs[self.inputs <= 0] = 0
 
 
 class Softmax:
@@ -30,6 +39,20 @@ class Softmax:
         nProb = unProb / np.sum(unProb, axis=1, keepdims=True)
 
         self.output = nProb
+
+    # Our backward pass method
+    def backward(self, dvalues):
+        # Create an () empty array, using the np.empty_like() method.
+        self.dinputs = np.empty_like(dvalues)
+
+        for index, (singleOutput, singleDValues) in enumerate(zip(self.output, dvalues)):
+            # Flatten our output array
+            singleOutput = singleOutput.reshape(-1, 1)
+            # Calculate our Jacobian matrix using the technique showed above
+            jacobian = (np.diagflat(singleOutput) - np.dot(singleOutput, singleOutput.T))
+
+            # Calculate our sample-wise gradient and add it to the correct index
+            self.dinputs[index] = np.dot(jacobian, singleDValues)
 
 
 class CategoricalCrossEntropyLoss:
